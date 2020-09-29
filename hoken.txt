@@ -94,9 +94,6 @@ int GameScene;
 MAPCHIP animal[ANIMAL_MAX];
 int GHandle[ANIMAL_MAX];
 
-int zyunbann = 0;
-int dammy = 0;
-
 //画像関連
 IMAGE ImageSTARTBK;   //ゲームの背景
 IMAGE ImagePLAYENDBK;
@@ -375,39 +372,27 @@ VOID MY_PLAY(VOID)
 //プレイ画面の処理
 VOID MY_PLAY_PROC(VOID)
 {
-	/*for (int cnt = 0; cnt < ANIMAL_MAX; cnt++)
-	{
-		animal[cnt].IsDraw = FALSE;
-	}*/
 	//スペースキーを押したら、エンドシーンに移動する
 	if (MY_KEY_DOWN(KEY_INPUT_SPACE) == TRUE)
 	{
 		GameScene = GAME_SCENE_END;
 	}
 
-	if (MY_KEY_DOWN(KEY_INPUT_RETURN) == TRUE)
+	for (int cnt = 0; cnt < ANIMAL_MAX; cnt++)
 	{
-		//単体で表示する
-		if (zyunbann == 0)
+		if (animal[cnt].IsDraw == FALSE)
 		{
 			//描画する
-			animal[ANIMAL_MAX - 1].IsDraw = FALSE;
-			animal[zyunbann].IsDraw = TRUE;
-			zyunbann++;
-		}
-		else if (zyunbann == 3)
-		{
-			animal[zyunbann - 1].IsDraw = FALSE;
-			animal[zyunbann].IsDraw = TRUE;
-			zyunbann = 0;
-		}
-		else
-		{
-			animal[zyunbann - 1].IsDraw = FALSE;
-			animal[zyunbann].IsDraw = TRUE;
-			zyunbann++;
+			animal[cnt].IsDraw = TRUE;
+
+			animal[cnt].x = GAME_WIDTH / 2 - animal[cnt].width / 2;
+
+			animal[cnt].y = 0;
+
+			break;
 		}
 	}
+
 	return;
 }
 
@@ -426,29 +411,33 @@ VOID MY_PLAY_DRAW(VOID)
 			DrawGraph(
 				animal[cnt].x,
 				animal[cnt].y,
-				//animal[cnt].handle[animal[cnt].nowImageKind],
-				GHandle[cnt],
+				animal[cnt].handle[animal[cnt].nowImageKind],
 				TRUE
 			);
 
 			//表示フレームを増やす
-			//if (animal[cnt].changeImageCnt < animal[cnt].changeImageCntMAX)
-			//{
-			//	animal[cnt].changeImageCnt++;
-			//}
-			//else
-			//{
-			//	//現在表示している動物がまだいる時
-			//	if (animal[cnt].nowImageKind < CHIP_DIV_NUM)
-			//	{
-			//		animal[cnt].nowImageKind++;
-			//	}
-			//	else
-			//	{
-			//		animal[cnt].nowImageKind = 0;
-			//	}
-			//	animal[cnt].changeImageCnt = 0;
-			//}
+			if (animal[cnt].changeImageCnt < animal[cnt].changeImageCntMAX)
+			{
+				animal[cnt].changeImageCnt++;
+			}
+			else
+			{
+				//現在表示している動物がまだいる時
+				if (animal[cnt].nowImageKind < CHIP_DIV_NUM)
+				{
+					if (MY_KEY_DOWN(KEY_INPUT_RETURN) == TRUE)
+					{
+						animal[cnt].nowImageKind++;
+						animal[cnt].IsDraw = FALSE;
+						
+					}
+				}
+				else
+				{
+					animal[cnt].nowImageKind = 0;
+				}
+				animal[cnt].changeImageCnt = 0;
+			}
 		}
 	}
 
@@ -582,7 +571,7 @@ BOOL MY_LOAD_IMAGE(VOID)
 		GAME_animal1_CHIP_PATH,										//動物チップのパス
 		CHIP_DIV_NUM, GAME_animal1_DIV_TATE, GAME_animal1_DIV_YOKO, //分割する数
 		CHIP_DIV_WIDTH, CHIP_DIV_HEIGHT,							//画像を分割する幅と高さ
-		GHandle
+		&animal[0].handle[0]
 	);
 
 	if (animalRes == -1)
@@ -591,25 +580,22 @@ BOOL MY_LOAD_IMAGE(VOID)
 		return FALSE;
 	}
 
-	for (int cnt = 0; cnt < ANIMAL_MAX; cnt++)
-	{
-		GetGraphSize(GHandle[cnt], &animal[cnt].width, &animal[cnt].height);
-	}
+	GetGraphSize(animal[0].handle[0], &animal[0].width, &animal[0].height);
 
 	for (int cnt = 0; cnt < ANIMAL_MAX; cnt++)
 	{
 		strcpyDx(animal[cnt].path, TEXT(GAME_animal1_CHIP_PATH));
 		
-		/*for (int i_num = 0; i_num < CHIP_DIV_NUM; i_num++)
+		for (int i_num = 0; i_num < CHIP_DIV_NUM; i_num++)
 		{
-			animal[cnt].handle[i_num] = GHandle[cnt];
-		}*/
+			animal[cnt].handle[i_num] = animal[0].handle[i_num];
+		}
 
 		animal[cnt].width = animal[0].width;
 
 		animal[cnt].height = animal[0].height;
 
-		animal[cnt].x = GAME_WIDTH / 2 - animal[0].width / 2;;
+		animal[cnt].x = 0;
 
 		animal[cnt].y = 0;
 
