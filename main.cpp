@@ -321,6 +321,7 @@ BOOL MY_KEYDOWN_KEEP(int KEY_INPUT_, int DownTime)
 	}
 }
 
+//動物の画像変更用
 BOOL MY_KEYDOWN_1second(int KEY_INPUT_)
 {
 	//キーコードのキーを押している時
@@ -397,6 +398,11 @@ VOID MY_PLAY_PROC(VOID)
 	if (MY_KEY_DOWN(KEY_INPUT_SPACE) == TRUE)
 	{
 		GameScene = GAME_SCENE_END;
+		for (int cnt = 0; cnt < ANIMAL_MAX; cnt++)
+		{
+			animal[cnt].IsDraw = FALSE;
+		}
+		zyunbann = 0;
 	}
 
 	if (MY_KEYDOWN_1second(KEY_INPUT_RETURN) == TRUE)
