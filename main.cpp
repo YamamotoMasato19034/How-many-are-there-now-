@@ -398,10 +398,13 @@ VOID MY_PLAY_PROC(VOID)
 	if (MY_KEY_DOWN(KEY_INPUT_SPACE) == TRUE)
 	{
 		GameScene = GAME_SCENE_END;
+
+		//終了する際は全て消す
 		for (int cnt = 0; cnt < ANIMAL_MAX; cnt++)
 		{
 			animal[cnt].IsDraw = FALSE;
 		}
+		//再開しても最初から
 		zyunbann = 0;
 	}
 
@@ -443,12 +446,19 @@ VOID MY_PLAY_DRAW(VOID)
 		if (animal[cnt].IsDraw == TRUE)
 		{
 			//描画する
-			DrawGraph(
-				animal[cnt].x,
-				animal[cnt].y,
-				//animal[cnt].handle[animal[cnt].nowImageKind],
-				GHandle[cnt],
-				TRUE
+			//DrawGraph(
+			//	animal[cnt].x,
+			//	animal[cnt].y,
+			//	//animal[cnt].handle[animal[cnt].nowImageKind],
+			//	GHandle[cnt],
+			//	TRUE
+			//);
+
+			//画像を1.5倍に縮小表示
+			DrawExtendGraph(
+				animal[cnt].x, animal[cnt].y,
+				animal[cnt].x + animal[cnt].width / 1.5, animal[cnt].y + (int)animal[cnt].height / 1.5,
+				GHandle[cnt], TRUE
 			);
 
 			//表示フレームを増やす
@@ -629,9 +639,9 @@ BOOL MY_LOAD_IMAGE(VOID)
 
 		animal[cnt].height = animal[0].height;
 
-		animal[cnt].x = GAME_WIDTH / 2 - animal[0].width / 2;;
+		animal[cnt].x = (GAME_WIDTH / 2 - animal[0].width / 2) + animal[0].width / 10;
 
-		animal[cnt].y = 0;
+		animal[cnt].y = animal[0].height / 10;
 
 		animal[cnt].IsDraw = FALSE;
 
