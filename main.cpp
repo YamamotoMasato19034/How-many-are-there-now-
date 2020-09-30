@@ -112,6 +112,7 @@ VOID MY_ALL_KEYDOWN_UPDATE(VOID);  //キーの入力状態を更新する
 BOOL MY_KEY_DOWN(int);			   //キーを押しているか、キーコードで判断する
 BOOL MY_KEY_UP(int);			   //キーを押し上げたか、キーコードで判断する
 BOOL MY_KEYDOWN_KEEP(int, int);    //キーを押し続けているか、キーコードで判断する
+BOOL MY_KEYDOWN_1second(int);
 
 VOID MY_START(VOID);		//スタート画面
 VOID MY_START_PROC(VOID);   //スタート画面の処理
@@ -320,6 +321,19 @@ BOOL MY_KEYDOWN_KEEP(int KEY_INPUT_, int DownTime)
 	}
 }
 
+BOOL MY_KEYDOWN_1second(int KEY_INPUT_)
+{
+	//キーコードのキーを押している時
+	if (AllKeyState[KEY_INPUT_] == 1)
+	{
+		return TRUE;	//キーを押している
+	}
+	else
+	{
+		return FALSE;	//キーを押していない
+	}
+}
+
 //スタート画面
 VOID MY_START(VOID)
 {
@@ -385,7 +399,7 @@ VOID MY_PLAY_PROC(VOID)
 		GameScene = GAME_SCENE_END;
 	}
 
-	if (MY_KEY_DOWN(KEY_INPUT_RETURN) == TRUE)
+	if (MY_KEYDOWN_1second(KEY_INPUT_RETURN) == TRUE)
 	{
 		//単体で表示する
 		if (zyunbann == 0)
