@@ -136,6 +136,7 @@ VOID MY_DELETE_IMAGE(VOID);  //画像をまとめて削除する関数
 //########## プログラムで最初に実行される関数 ##########
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
+	SetOutApplicationLogValidFlag(FALSE);
 	ChangeWindowMode(TRUE);						//ウィンドウモードに設定
 	SetGraphMode(GAME_WIDTH, GAME_HEIGHT, GAME_COLOR);	//指定の数値でウィンドウを表示する
 	SetWindowStyleMode(GAME_WINDOW_BAR);		//タイトルバーはデフォルトにする
@@ -187,12 +188,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 		MY_FPS_WAIT();     //FPSの処理(待つ)
 	}
-	//▲▲▲▲▲ プログラム追加ここまで ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
-
-	//▽▽▽▽▽ プログラム削除ここから ▽▽▽▽▽▽▽▽▽▽▽▽▽▽▽▽▽▽▽▽
+	
 	//DrawString(DrawX, DrawY, "Hello World", GetColor(255, 255, 255));	//文字を描画
 	//WaitKey();	//キー入力待ち
-	//△△△△△ プログラム削除ここまで △△△△△△△△△△△△△△△△△△△△
 
 	//画像ハンドルを破棄
 	MY_DELETE_IMAGE();
@@ -373,7 +371,7 @@ VOID MY_START_DRAW(VOID)
 
 	//赤の四角を描画
 	//DrawBox(10, 10, GAME_WIDTH - 10, GAME_HEIGHT - 10, GetColor(255, 0, 0), TRUE);
-	DrawString(0, 0, "スタート画面(エンターキーを押して下さい)", GetColor(255, 255, 255));
+	//DrawString(0, 0, "スタート画面(エンターキーを押して下さい)", GetColor(255, 255, 255));
 
 	return;
 }
@@ -439,6 +437,11 @@ VOID MY_PLAY_DRAW(VOID)
 {
 	DrawGraph(ImagePLAYENDBK.x, ImagePLAYENDBK.y, ImagePLAYENDBK.handle, TRUE);
 
+	SetDrawBlendMode(DX_BLENDMODE_ALPHA, 192);
+	DrawBox(0, GAME_HEIGHT - 180, GAME_WIDTH, GAME_HEIGHT, GetColor(0, 0, 0), TRUE);
+	
+	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+
 	//動物の情報を生成
 	for (int cnt = 0; cnt < ANIMAL_MAX; cnt++)
 	{
@@ -484,7 +487,7 @@ VOID MY_PLAY_DRAW(VOID)
 
 	//緑の四角を描画
 	//DrawBox(10, 10, GAME_WIDTH - 10, GAME_HEIGHT - 10, GetColor(0, 255, 0), TRUE);
-	DrawString(0, 0, "プレイ画面(スペースキーを押して下さい)", GetColor(255, 255, 255));
+	//DrawString(0, 0, "プレイ画面(スペースキーを押して下さい)", GetColor(255, 255, 255));
 
 	return;
 }
@@ -517,7 +520,7 @@ VOID MY_END_DRAW(VOID)
 
 	//青の四角を描画
 	//DrawBox(10, 10, GAME_WIDTH - 10, GAME_HEIGHT - 10, GetColor(0, 0, 255), TRUE);
-	DrawString(0, 0, "エンド画面(エスケープキーを押して下さい)", GetColor(255, 255, 255));
+	//DrawString(0, 0, "エンド画面(エスケープキーを押して下さい)", GetColor(255, 255, 255));
 
 	return;
 }
@@ -548,7 +551,7 @@ VOID MY_MENU_DRAW(VOID)
 	DrawGraph(ImageMENUBK.x, ImageMENUBK.y, ImageMENUBK.handle, TRUE);
 	
 	//DrawBox(10, 10, GAME_WIDTH - 10, GAME_HEIGHT - 10, GetColor(255, 0, 0), TRUE);
-	DrawString(0, 0, "操作説明画面(バックスペースキーを押して下さい)", GetColor(255, 255, 255));
+	//DrawString(0, 0, "操作説明画面(バックスペースキーを押して下さい)", GetColor(255, 255, 255));
 
 	return;
 }
