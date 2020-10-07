@@ -36,17 +36,14 @@
 #define GAME_animal1_DIV_YOKO   2     //画像を横に分割する数
 #define CHIP_DIV_NUM GAME_animal1_DIV_TATE * GAME_animal1_DIV_YOKO  //画像を分割する総数
 
+#define FIRST_MASK				20
+
 enum GAME_SCENE {
 	GAME_SCENE_START,
 	GAME_SCENE_PLAY,
 	GAME_SCENE_END,
 	GAME_SCENE_MENU,
 };   //ゲームのシーン
-
-enum SPEED {
-	SPEED_LOW = 1,
-	SPEED_HIGH = 3
-};  //移動スピード
 
 typedef struct STRUCT_I_POINT
 {
@@ -74,9 +71,6 @@ typedef struct STRUCT_ANIMAL
 	int height;					//高さ
 	BOOL IsDraw;				//動物を表示できるか
 	int nowImageKind;			//動物の現在の画像
-	int changeImageCnt;			//画像を変えるためのもの
-	int changeImageCntMAX;
-	int speed;
 }MAPCHIP;
 
 //グローバル変数
@@ -96,6 +90,8 @@ int GHandle[ANIMAL_MAX];
 
 int zyunbann = 0;
 int dammy = 0;
+
+int Mask_num = 0;
 
 //画像関連
 IMAGE ImageSTARTBK;   //ゲームの背景
@@ -408,6 +404,8 @@ VOID MY_PLAY_PROC(VOID)
 
 	if (MY_KEYDOWN_1second(KEY_INPUT_RETURN) == TRUE)
 	{
+		Mask_num = GetRand(10);
+
 		//単体で表示する
 		if (zyunbann == 0)
 		{
@@ -439,7 +437,6 @@ VOID MY_PLAY_DRAW(VOID)
 
 	SetDrawBlendMode(DX_BLENDMODE_ALPHA, 192);
 	DrawBox(0, GAME_HEIGHT - 180, GAME_WIDTH, GAME_HEIGHT, GetColor(0, 0, 0), TRUE);
-	
 	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 
 	//動物の情報を生成
@@ -463,25 +460,7 @@ VOID MY_PLAY_DRAW(VOID)
 				animal[cnt].x + animal[cnt].width / 1.5, animal[cnt].y + (int)animal[cnt].height / 1.5,
 				GHandle[cnt], TRUE
 			);
-
-			//表示フレームを増やす
-			//if (animal[cnt].changeImageCnt < animal[cnt].changeImageCntMAX)
-			//{
-			//	animal[cnt].changeImageCnt++;
-			//}
-			//else
-			//{
-			//	//現在表示している動物がまだいる時
-			//	if (animal[cnt].nowImageKind < CHIP_DIV_NUM)
-			//	{
-			//		animal[cnt].nowImageKind++;
-			//	}
-			//	else
-			//	{
-			//		animal[cnt].nowImageKind = 0;
-			//	}
-			//	animal[cnt].changeImageCnt = 0;
-			//}
+			DrawFormatString(0, 0, GetColor(0, 0, 0), "%d個", Mask_num);
 		}
 	}
 
@@ -647,14 +626,6 @@ BOOL MY_LOAD_IMAGE(VOID)
 		animal[cnt].y = animal[0].height / 10;
 
 		animal[cnt].IsDraw = FALSE;
-
-		animal[cnt].changeImageCnt = 0;
-
-		animal[cnt].changeImageCntMAX = ANIMAL_CHANGE_MAX;
-
-		animal[cnt].speed = SPEED_HIGH;
-
-		animal[cnt].nowImageKind = 0;
 	}
 
 	return TRUE;
