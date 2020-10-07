@@ -21,15 +21,18 @@
 //エラーメッセージ
 #define IMAGE_LOAD_ERR_TITLE    TEXT("画像読み込みエラー")
 
+//画像関連
 #define IMAGE_START_IMAGE_PATH  TEXT(".\\IMAGE\\スタート画面.png")  //背景の画像
 #define IMAGE_PLAY_IMAGE_PATH   TEXT(".\\IMAGE\\森の中.png")  //背景の画像
 #define IMAGE_MENU_IMAGE_PATH   TEXT(".\\IMAGE\\操作説明.png")  //背景の画像
 #define IMAGE_MENU_BK_PATH      TEXT(".\\IMAGE\\menu_背景.png")
 
+//動物チップ関連
 #define GAME_animal1_CHIP_PATH  TEXT(".\\IMAGE\\animal\\mapchip_1.png")  //チップの画像
 #define ANIMAL_MAX				4
 #define ANIMAL_CHANGE_MAX		6
 
+//画像分割関連
 #define CHIP_DIV_WIDTH			565   //画像を分割する幅サイズ
 #define CHIP_DIV_HEIGHT			660   //画像を分割する高さサイズ
 #define GAME_animal1_DIV_TATE   2     //画像を縦に分割する数
@@ -37,6 +40,17 @@
 #define CHIP_DIV_NUM GAME_animal1_DIV_TATE * GAME_animal1_DIV_YOKO  //画像を分割する総数
 
 #define FIRST_MASK				20
+
+//フォントのパスの長さ
+#define FONT_PATH_MAX			255
+
+//フォント
+#define FONT_TANUKI_PATH		TEXT(".\\FONT\\TanukiMagic.ttf")
+#define FONT_TANUKI_NAME		TEXT("たぬき油性マジック")
+
+//フォントのエラーメッセージ
+#define FONT_INSTALL_ERR_TITLE	TEXT("フォントインストールエラー")
+#define FONT_CREATE_ERR_TITLE	TEXT("フォント作成エラー")
 
 enum GAME_SCENE {
 	GAME_SCENE_START,
@@ -73,6 +87,16 @@ typedef struct STRUCT_ANIMAL
 	int nowImageKind;			//動物の現在の画像
 }MAPCHIP;
 
+typedef struct STRUCT_FONT
+{
+	char path[FONT_PATH_MAX];   //パス
+	char name[FONT_PATH_MAX];   //フォント名
+	int handle;                 //ハンドル
+	int size;					//大きさ
+	int bold;					//太さ
+	int type;					//タイプ
+}FONT;
+
 //グローバル変数
 int StartTimeFps;				//測定開始時刻
 int CountFps;					//カウンタ
@@ -88,7 +112,7 @@ int GameScene;
 MAPCHIP animal[ANIMAL_MAX];
 int GHandle[ANIMAL_MAX];
 
-int zyunbann = 0;
+int order = 0;
 int dammy = 0;
 
 int Mask_num = 0;
@@ -98,6 +122,9 @@ IMAGE ImageSTARTBK;   //ゲームの背景
 IMAGE ImagePLAYENDBK;
 IMAGE ImageMENU;
 IMAGE ImageMENUBK;
+
+//フォント関連
+FONT TANUKI;
 
 //プロトタイプ宣言
 VOID MY_FPS_UPDATE(VOID);		//FPS値を計測、更新する関数
@@ -129,6 +156,11 @@ VOID MY_MENU_DRAW(VOID);  //操作説明画面の描画
 BOOL MY_LOAD_IMAGE(VOID);    //画像をまとめて読み込む関数
 VOID MY_DELETE_IMAGE(VOID);  //画像をまとめて削除する関数
 
+BOOL MY_FONT_INSTALL_ONCE(VOID);    //フォントを一時的にインストール
+VOID MY_FONT_UNINSTALL_ONCE(VOID);  //フォントを一時的にアンインストール
+BOOL MY_FONT_CREATE(VOID);			//フォントを作成する
+VOID MY_FONT_DELETE(VOID);			//フォントを削除する
+
 //########## プログラムで最初に実行される関数 ##########
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
@@ -140,6 +172,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	SetAlwaysRunFlag(TRUE);						//非アクティブでも実行する
 
 	if (DxLib_Init() == -1) { return -1; }	//ＤＸライブラリ初期化処理
+
+	//フォントを一時的にインストール
+	if (MY_FONT_INSTALL_ONCE() == FALSE) { return -1; }
+
+	//フォントハンドルを作成
+	if (MY_FONT_CREATE() == FALSE) { return -1; }
 
 	//画像を読み込む
 	if (MY_LOAD_IMAGE() == FALSE) { return -1; }
@@ -190,6 +228,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	//画像ハンドルを破棄
 	MY_DELETE_IMAGE();
+
+	//フォントハンドルを破棄
+	MY_FONT_DELETE();
+
+	//一時的にインストールしたフォントをアンインストール
+	MY_FONT_UNINSTALL_ONCE();
 
 	DxLib_End();	//ＤＸライブラリ使用の終了処理
 
@@ -399,32 +443,36 @@ VOID MY_PLAY_PROC(VOID)
 			animal[cnt].IsDraw = FALSE;
 		}
 		//再開しても最初から
-		zyunbann = 0;
+		order = 0;
 	}
 
+	//エンターキーを押したら
 	if (MY_KEYDOWN_1second(KEY_INPUT_RETURN) == TRUE)
 	{
+		//乱数を取得
 		Mask_num = GetRand(10);
 
 		//単体で表示する
-		if (zyunbann == 0)
+		if (order == 0)
 		{
 			//描画する
-			animal[ANIMAL_MAX - 1].IsDraw = FALSE;
-			animal[zyunbann].IsDraw = TRUE;
-			zyunbann++;
+			animal[ANIMAL_MAX - 1].IsDraw = FALSE;  //一個前の絵を消す
+			animal[order].IsDraw = TRUE;			//表示
+			order++;
 		}
-		else if (zyunbann == 3)
+		else if (order == 3)
 		{
-			animal[zyunbann - 1].IsDraw = FALSE;
-			animal[zyunbann].IsDraw = TRUE;
-			zyunbann = 0;
+			//描画
+			animal[order - 1].IsDraw = FALSE;		//一個前の絵を消す
+			animal[order].IsDraw = TRUE;			//表示
+			order = 0;
 		}
 		else
 		{
-			animal[zyunbann - 1].IsDraw = FALSE;
-			animal[zyunbann].IsDraw = TRUE;
-			zyunbann++;
+			//描画
+			animal[order - 1].IsDraw = FALSE;		//一個前の絵を消す
+			animal[order].IsDraw = TRUE;			//表示
+			order++;
 		}
 	}
 	return;
@@ -433,11 +481,13 @@ VOID MY_PLAY_PROC(VOID)
 //プレイ画面の描画
 VOID MY_PLAY_DRAW(VOID)
 {
+	//プレイ画面の背景
 	DrawGraph(ImagePLAYENDBK.x, ImagePLAYENDBK.y, ImagePLAYENDBK.handle, TRUE);
 
-	SetDrawBlendMode(DX_BLENDMODE_ALPHA, 192);
+	//トークシーンの背景
+	SetDrawBlendMode(DX_BLENDMODE_ALPHA, 192);  //透明度を25%上げる
 	DrawBox(0, GAME_HEIGHT - 180, GAME_WIDTH, GAME_HEIGHT, GetColor(0, 0, 0), TRUE);
-	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);  //元に戻す
 
 	//動物の情報を生成
 	for (int cnt = 0; cnt < ANIMAL_MAX; cnt++)
@@ -460,7 +510,9 @@ VOID MY_PLAY_DRAW(VOID)
 				animal[cnt].x + animal[cnt].width / 1.5, animal[cnt].y + (int)animal[cnt].height / 1.5,
 				GHandle[cnt], TRUE
 			);
-			DrawFormatString(0, 0, GetColor(0, 0, 0), "%d個", Mask_num);
+
+			//欲しいマスクの表示
+			DrawFormatStringToHandle(170, GAME_HEIGHT - 170, GetColor(255, 255, 255), TANUKI.handle, "マスク %d個 ちょうだい！！", Mask_num);
 		}
 	}
 
@@ -597,35 +649,28 @@ BOOL MY_LOAD_IMAGE(VOID)
 		GHandle
 	);
 
+	//正しく分割できなかったら
 	if (animalRes == -1)
 	{
 		MessageBox(GetMainWindowHandle(), GAME_animal1_CHIP_PATH, IMAGE_LOAD_ERR_TITLE, MB_OK);
 		return FALSE;
 	}
 
+	//それぞれ幅と高さを取得
 	for (int cnt = 0; cnt < ANIMAL_MAX; cnt++)
 	{
 		GetGraphSize(GHandle[cnt], &animal[cnt].width, &animal[cnt].height);
 	}
 
+	//情報を与える
 	for (int cnt = 0; cnt < ANIMAL_MAX; cnt++)
 	{
-		strcpyDx(animal[cnt].path, TEXT(GAME_animal1_CHIP_PATH));
-		
-		/*for (int i_num = 0; i_num < CHIP_DIV_NUM; i_num++)
-		{
-			animal[cnt].handle[i_num] = GHandle[cnt];
-		}*/
-
-		animal[cnt].width = animal[0].width;
-
-		animal[cnt].height = animal[0].height;
-
-		animal[cnt].x = (GAME_WIDTH / 2 - animal[0].width / 2) + animal[0].width / 10;
-
-		animal[cnt].y = animal[0].height / 10;
-
-		animal[cnt].IsDraw = FALSE;
+		strcpyDx(animal[cnt].path, TEXT(GAME_animal1_CHIP_PATH));						//パス
+		animal[cnt].width = animal[0].width;											//幅
+		animal[cnt].height = animal[0].height;											//高さ
+		animal[cnt].x = (GAME_WIDTH / 2 - animal[0].width / 2) + animal[0].width / 10;	//X座標
+		animal[cnt].y = animal[0].height / 10;											//Y座標
+		animal[cnt].IsDraw = FALSE;														//描画できるか(初期値は 描画できない)
 	}
 
 	return TRUE;
@@ -643,6 +688,57 @@ VOID MY_DELETE_IMAGE(VOID)
 	{
 		DeleteGraph(animal[0].handle[i_num]);
 	}
+
+	return;
+}
+
+//フォントを一時的にインストール
+BOOL MY_FONT_INSTALL_ONCE(VOID)
+{
+	//フォントを一時的に読み込み
+	if (AddFontResourceEx(FONT_TANUKI_PATH, FR_PRIVATE, NULL) == 0)
+	{
+		//エラーメッセージ表示
+		MessageBox(GetMainWindowHandle(), FONT_TANUKI_NAME, FONT_INSTALL_ERR_TITLE, MB_OK);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+//フォントを一時的にアンインストール
+VOID MY_FONT_UNINSTALL_ONCE(VOID)
+{
+	//フォントを一時的にアンインストール
+	RemoveFontResourceEx(FONT_TANUKI_PATH, FR_PRIVATE, NULL);
+
+	return;
+}
+
+//フォントを読み込む
+BOOL MY_FONT_CREATE(VOID)
+{
+	//フォントデータを作成
+	strcpy_s(TANUKI.path, sizeof(TANUKI.path), FONT_TANUKI_PATH);  //パスをコピー
+	strcpy_s(TANUKI.name, sizeof(TANUKI.name), FONT_TANUKI_NAME);  //フォント名をコピー
+	TANUKI.handle = -1;							//ハンドルを初期化
+	TANUKI.size = 50;								//サイズ: 50
+	TANUKI.bold = 4;								//太さ: 4
+	TANUKI.type = DX_FONTTYPE_ANTIALIASING_EDGE;   //アンチエイリアシング付き
+
+	//フォントハンドル作成
+	TANUKI.handle = CreateFontToHandle(TANUKI.name, TANUKI.size, TANUKI.bold, TANUKI.type);
+	//フォントハンドルを作成できないときエラー
+	if (TANUKI.handle == -1) { MessageBox(GetMainWindowHandle(), FONT_TANUKI_NAME, FONT_CREATE_ERR_TITLE, MB_OK); return FALSE; }
+
+	return TRUE;
+}
+
+//フォントを削除する
+VOID MY_FONT_DELETE(VOID)
+{
+	//フォントデータを削除
+	DeleteFontToHandle(TANUKI.handle);
 
 	return;
 }
