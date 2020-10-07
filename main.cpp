@@ -450,7 +450,7 @@ VOID MY_PLAY_PROC(VOID)
 	if (MY_KEYDOWN_1second(KEY_INPUT_RETURN) == TRUE)
 	{
 		//乱数を取得
-		Mask_num = GetRand(10);
+			Mask_num = GetRand(10);
 
 		//単体で表示する
 		if (order == 0)
@@ -511,8 +511,15 @@ VOID MY_PLAY_DRAW(VOID)
 				GHandle[cnt], TRUE
 			);
 
+			//「あげる？」「あげない？」の追加
+			DrawBox(200, GAME_HEIGHT - 100, 410, GAME_HEIGHT - 50, GetColor(255, 0, 0), TRUE);
+			DrawStringToHandle(200, GAME_HEIGHT - 100, "あげる？", GetColor(255, 255, 255), TANUKI.handle);
+			DrawBox(500, GAME_HEIGHT - 100, 770, GAME_HEIGHT - 50, GetColor(0, 0, 255), TRUE);
+			DrawStringToHandle(500, GAME_HEIGHT - 100, "あげない？", GetColor(255, 255, 255), TANUKI.handle);
+
 			//欲しいマスクの表示
 			DrawFormatStringToHandle(170, GAME_HEIGHT - 170, GetColor(255, 255, 255), TANUKI.handle, "マスク %d個 ちょうだい！！", Mask_num);
+			 
 		}
 	}
 
