@@ -52,6 +52,8 @@
 #define FONT_INSTALL_ERR_TITLE	TEXT("フォントインストールエラー")
 #define FONT_CREATE_ERR_TITLE	TEXT("フォント作成エラー")
 
+#define GAMETIME				5
+
 enum GAME_SCENE {
 	GAME_SCENE_START,
 	GAME_SCENE_PLAY,
@@ -119,6 +121,7 @@ int order = 0;
 int dammy = 0;
 int Mask_num = 0;
 int Mask_sum = 0;
+int Mask_sum_Kari = 0;
 
 int stage = 0;
 
@@ -457,33 +460,31 @@ VOID MY_PLAY(VOID)
 //プレイ画面の処理
 VOID MY_PLAY_PROC(VOID)
 {
-	/*for (int cnt = 0; cnt < ANIMAL_MAX; cnt++)
-	{
-		animal[cnt].IsDraw = FALSE;
-	}*/
 	//一定量を超えたら終了
-	if (Mask_sum > stage)
-	{
-		GameScene = GAME_SCENE_END;
+	//if (Mask_sum >= stage)
+	//{
+	//	GameScene = GAME_SCENE_END;
 
-		//終了する際は全て消す
-		for (int cnt = 0; cnt < ANIMAL_MAX; cnt++)
-		{
-			animal[cnt].IsDraw = FALSE;
-		}
-		//再開しても最初から
-		order = 0;
-		//初期化
-		Mask_num = 0;
-		Mask_sum = 0;
-	}
+	//	//終了する際は全て消す
+	//	for (int cnt = 0; cnt < ANIMAL_MAX; cnt++)
+	//	{
+	//		animal[cnt].IsDraw = FALSE;
+	//	}
+	//	//再開しても最初から
+	//	order = 0;
+	//	//初期化
+	//	Mask_num = 0;
+	//	Mask_sum = 0;
+	//}
 
 	//エンターキーを押したら
 	if (MY_KEYDOWN_1second(KEY_INPUT_RETURN) == TRUE)
 	{
 		//乱数を取得
-		Mask_num = GetRand(10);
-		Mask_sum += Mask_num;
+		Mask_num = GetRand(5);
+		if ((Mask_sum - Mask_num) < stage) {
+			Mask_sum += Mask_num;
+		}
 
 		//単体で表示する
 		if (order == 0)
@@ -507,6 +508,19 @@ VOID MY_PLAY_PROC(VOID)
 			animal[order].IsDraw = TRUE;			//表示
 			order++;
 		}
+	}
+	else if ((MY_KEYDOWN_1second(KEY_INPUT_BACK) == TRUE))
+	{
+		GameScene = GAME_SCENE_END;
+		for (int cnt = 0; cnt < ANIMAL_MAX; cnt++)
+		{
+			animal[cnt].IsDraw = FALSE;
+		}
+		//再開しても最初から
+		order = 0;
+		//初期化
+		Mask_num = 0;
+		Mask_sum = 0;
 	}
 	return;
 }
