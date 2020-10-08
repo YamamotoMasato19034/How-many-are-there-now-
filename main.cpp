@@ -107,15 +107,20 @@ int SampleNumFps = GAME_FPS;	//平均をとるサンプル数
 char AllKeyState[256] = { 0 };
 char OldAllKeyState[256] = { 0 };
 
+//ゲームシーン
 int GameScene;
 
+//マップチップ関連
 MAPCHIP animal[ANIMAL_MAX];
 int GHandle[ANIMAL_MAX];
 
+//マスク関連
 int order = 0;
 int dammy = 0;
-
 int Mask_num = 0;
+int Mask_sum = 0;
+
+int stage = 0;
 
 //画像関連
 IMAGE ImageSTARTBK;   //ゲームの背景
@@ -388,6 +393,7 @@ VOID MY_START_PROC(VOID)
 	//エンターキーを押したら、プレイシーンへ移動する
 	if (MY_KEY_DOWN(KEY_INPUT_RETURN) == TRUE)
 	{
+		stage = FIRST_MASK;
 		GameScene = GAME_SCENE_PLAY;
 	}
 
@@ -409,10 +415,33 @@ VOID MY_START_DRAW(VOID)
 	//操作説明画面
 	DrawGraph(ImageMENU.x, ImageMENU.y, ImageMENU.handle, TRUE);
 
-	//赤の四角を描画
-	//DrawBox(10, 10, GAME_WIDTH - 10, GAME_HEIGHT - 10, GetColor(255, 0, 0), TRUE);
-	//DrawString(0, 0, "スタート画面(エンターキーを押して下さい)", GetColor(255, 255, 255));
+	return;
+}
 
+//操作説明画面
+VOID MY_MENU(VOID)
+{
+	MY_MENU_PROC();     //操作説明画面の処理
+	MY_MENU_DRAW();     //操作説明画面の描画
+
+	return;
+}
+
+//操作説明画面の処理
+VOID MY_MENU_PROC(VOID)
+{
+	if (MY_KEY_DOWN(KEY_INPUT_BACK) == TRUE)
+	{
+		GameScene = GAME_SCENE_START;
+	}
+
+	return;
+}
+
+//操作説明画面の描画
+VOID MY_MENU_DRAW(VOID)
+{
+	DrawGraph(ImageMENUBK.x, ImageMENUBK.y, ImageMENUBK.handle, TRUE);
 	return;
 }
 
@@ -432,8 +461,8 @@ VOID MY_PLAY_PROC(VOID)
 	{
 		animal[cnt].IsDraw = FALSE;
 	}*/
-	//スペースキーを押したら、エンドシーンに移動する
-	if (MY_KEY_DOWN(KEY_INPUT_SPACE) == TRUE)
+	//一定量を超えたら終了
+	if (Mask_sum > stage)
 	{
 		GameScene = GAME_SCENE_END;
 
@@ -444,13 +473,17 @@ VOID MY_PLAY_PROC(VOID)
 		}
 		//再開しても最初から
 		order = 0;
+		//初期化
+		Mask_num = 0;
+		Mask_sum = 0;
 	}
 
 	//エンターキーを押したら
 	if (MY_KEYDOWN_1second(KEY_INPUT_RETURN) == TRUE)
 	{
 		//乱数を取得
-			Mask_num = GetRand(10);
+		Mask_num = GetRand(10);
+		Mask_sum += Mask_num;
 
 		//単体で表示する
 		if (order == 0)
@@ -495,15 +528,6 @@ VOID MY_PLAY_DRAW(VOID)
 		//描画できるなら
 		if (animal[cnt].IsDraw == TRUE)
 		{
-			//描画する
-			//DrawGraph(
-			//	animal[cnt].x,
-			//	animal[cnt].y,
-			//	//animal[cnt].handle[animal[cnt].nowImageKind],
-			//	GHandle[cnt],
-			//	TRUE
-			//);
-
 			//画像を1.5倍に縮小表示
 			DrawExtendGraph(
 				animal[cnt].x, animal[cnt].y,
@@ -511,21 +535,17 @@ VOID MY_PLAY_DRAW(VOID)
 				GHandle[cnt], TRUE
 			);
 
+			//欲しいマスクの表示
+			DrawFormatStringToHandle(170, GAME_HEIGHT - 170, GetColor(255, 255, 255), TANUKI.handle, "マスク %d個 ちょうだい！！", Mask_num);
+			DrawFormatStringToHandle(0, 0, GetColor(255, 255, 255), TANUKI.handle, "%d個", Mask_sum);
+
 			//「あげる？」「あげない？」の追加
 			DrawBox(200, GAME_HEIGHT - 100, 410, GAME_HEIGHT - 50, GetColor(255, 0, 0), TRUE);
 			DrawStringToHandle(200, GAME_HEIGHT - 100, "あげる？", GetColor(255, 255, 255), TANUKI.handle);
 			DrawBox(500, GAME_HEIGHT - 100, 770, GAME_HEIGHT - 50, GetColor(0, 0, 255), TRUE);
 			DrawStringToHandle(500, GAME_HEIGHT - 100, "あげない？", GetColor(255, 255, 255), TANUKI.handle);
-
-			//欲しいマスクの表示
-			DrawFormatStringToHandle(170, GAME_HEIGHT - 170, GetColor(255, 255, 255), TANUKI.handle, "マスク %d個 ちょうだい！！", Mask_num);
-			 
 		}
 	}
-
-	//緑の四角を描画
-	//DrawBox(10, 10, GAME_WIDTH - 10, GAME_HEIGHT - 10, GetColor(0, 255, 0), TRUE);
-	//DrawString(0, 0, "プレイ画面(スペースキーを押して下さい)", GetColor(255, 255, 255));
 
 	return;
 }
@@ -555,41 +575,6 @@ VOID MY_END_PROC(VOID)
 VOID MY_END_DRAW(VOID)
 {
 	DrawGraph(ImagePLAYENDBK.x, ImagePLAYENDBK.y, ImagePLAYENDBK.handle, TRUE);
-
-	//青の四角を描画
-	//DrawBox(10, 10, GAME_WIDTH - 10, GAME_HEIGHT - 10, GetColor(0, 0, 255), TRUE);
-	//DrawString(0, 0, "エンド画面(エスケープキーを押して下さい)", GetColor(255, 255, 255));
-
-	return;
-}
-
-//操作説明画面
-VOID MY_MENU(VOID)
-{
-	MY_MENU_PROC();     //操作説明画面の処理
-	MY_MENU_DRAW();     //操作説明画面の描画
-
-	return;
-}
-
-//操作説明画面の処理
-VOID MY_MENU_PROC(VOID)
-{
-	if (MY_KEY_DOWN(KEY_INPUT_BACK) == TRUE)
-	{
-		GameScene = GAME_SCENE_START;
-	}
-
-	return;
-}
-
-//操作説明画面の描画
-VOID MY_MENU_DRAW(VOID)
-{
-	DrawGraph(ImageMENUBK.x, ImageMENUBK.y, ImageMENUBK.handle, TRUE);
-	
-	//DrawBox(10, 10, GAME_WIDTH - 10, GAME_HEIGHT - 10, GetColor(255, 0, 0), TRUE);
-	//DrawString(0, 0, "操作説明画面(バックスペースキーを押して下さい)", GetColor(255, 255, 255));
 
 	return;
 }
