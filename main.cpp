@@ -143,7 +143,7 @@ VOID MY_ALL_KEYDOWN_UPDATE(VOID);  //キーの入力状態を更新する
 BOOL MY_KEY_DOWN(int);			   //キーを押しているか、キーコードで判断する
 BOOL MY_KEY_UP(int);			   //キーを押し上げたか、キーコードで判断する
 BOOL MY_KEYDOWN_KEEP(int, int);    //キーを押し続けているか、キーコードで判断する
-BOOL MY_KEYDOWN_1second(int);
+BOOL MY_KEYDOWN_1SECOND(int);      //キーを1秒間押し続けたか
 
 VOID MY_START(VOID);		//スタート画面
 VOID MY_START_PROC(VOID);   //スタート画面の処理
@@ -368,7 +368,7 @@ BOOL MY_KEYDOWN_KEEP(int KEY_INPUT_, int DownTime)
 }
 
 //動物の画像変更用
-BOOL MY_KEYDOWN_1second(int KEY_INPUT_)
+BOOL MY_KEYDOWN_1SECOND(int KEY_INPUT_)
 {
 	//キーコードのキーを押している時
 	if (AllKeyState[KEY_INPUT_] == 1)
@@ -461,7 +461,7 @@ VOID MY_PLAY(VOID)
 VOID MY_PLAY_PROC(VOID)
 {
 	//エンターキーを押したら
-	if (MY_KEYDOWN_1second(KEY_INPUT_RETURN) == TRUE)
+	if (MY_KEYDOWN_1SECOND(KEY_INPUT_RETURN) == TRUE)
 	{
 		Mask_sum += Mask_num;
 
@@ -508,19 +508,27 @@ VOID MY_PLAY_PROC(VOID)
 			order++;
 		}
 	}
-	//else if ((MY_KEYDOWN_1second(KEY_INPUT_BACK) == TRUE))
-	//{
-	//	GameScene = GAME_SCENE_END;
-	//	for (int cnt = 0; cnt < ANIMAL_MAX; cnt++)
-	//	{
-	//		animal[cnt].IsDraw = FALSE;
-	//	}
-	//	//再開しても最初から
-	//	order = 0;
-	//	//初期化
-	//	Mask_num = 0;
-	//	Mask_sum = 0;
-	//}
+	
+	if (MY_KEYDOWN_1SECOND(KEY_INPUT_DELETE) == TRUE)
+	{
+		//成功パターン
+		if ((Mask_sum + Mask_num) >= stage)
+		{
+			GameScene = GAME_SCENE_MENU;
+
+			//終了する際は全て消す
+			for (int cnt = 0; cnt < ANIMAL_MAX; cnt++)
+			{
+				animal[cnt].IsDraw = FALSE;
+			}
+			//再開しても最初から
+			order = 0;
+			//初期化
+			Mask_num = 0;
+			Mask_sum = 0;
+		}
+	}
+
 	return;
 }
 
