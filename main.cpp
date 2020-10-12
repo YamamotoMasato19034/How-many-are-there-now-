@@ -163,6 +163,7 @@ VOID MY_MENU_DRAW(VOID);  //操作説明画面の描画
 
 BOOL MY_LOAD_IMAGE(VOID);    //画像をまとめて読み込む関数
 VOID MY_DELETE_IMAGE(VOID);  //画像をまとめて削除する関数
+VOID MY_PICTURE_INIT(VOID);
 
 BOOL MY_FONT_INSTALL_ONCE(VOID);    //フォントを一時的にインストール
 VOID MY_FONT_UNINSTALL_ONCE(VOID);  //フォントを一時的にアンインストール
@@ -473,16 +474,8 @@ VOID MY_PLAY_PROC(VOID)
 		{
 			GameScene = GAME_SCENE_END;
 
-			//終了する際は全て消す
-			for (int cnt = 0; cnt < ANIMAL_MAX; cnt++)
-			{
-				animal[cnt].IsDraw = FALSE;
-			}
-			//再開しても最初から
-			order = 0;
-			//初期化
-			Mask_num = 0;
-			Mask_sum = 0;
+			//画像の消去・初期化
+			MY_PICTURE_INIT();
 		}
 
 		//単体で表示する
@@ -516,16 +509,8 @@ VOID MY_PLAY_PROC(VOID)
 		{
 			GameScene = GAME_SCENE_MENU;
 
-			//終了する際は全て消す
-			for (int cnt = 0; cnt < ANIMAL_MAX; cnt++)
-			{
-				animal[cnt].IsDraw = FALSE;
-			}
-			//再開しても最初から
-			order = 0;
-			//初期化
-			Mask_num = 0;
-			Mask_sum = 0;
+
+			MY_PICTURE_INIT();
 		}
 	}
 
@@ -701,6 +686,22 @@ VOID MY_DELETE_IMAGE(VOID)
 	{
 		DeleteGraph(animal[0].handle[i_num]);
 	}
+
+	return;
+}
+
+VOID MY_PICTURE_INIT(VOID)
+{
+	//終了する際は全て消す
+	for (int cnt = 0; cnt < ANIMAL_MAX; cnt++)
+	{
+		animal[cnt].IsDraw = FALSE;
+	}
+	//再開しても最初から
+	order = 0;
+	//初期化
+	Mask_num = 0;
+	Mask_sum = 0;
 
 	return;
 }
