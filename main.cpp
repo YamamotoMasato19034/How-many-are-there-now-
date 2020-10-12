@@ -460,30 +460,29 @@ VOID MY_PLAY(VOID)
 //プレイ画面の処理
 VOID MY_PLAY_PROC(VOID)
 {
-	//一定量を超えたら終了
-	//if (Mask_sum >= stage)
-	//{
-	//	GameScene = GAME_SCENE_END;
-
-	//	//終了する際は全て消す
-	//	for (int cnt = 0; cnt < ANIMAL_MAX; cnt++)
-	//	{
-	//		animal[cnt].IsDraw = FALSE;
-	//	}
-	//	//再開しても最初から
-	//	order = 0;
-	//	//初期化
-	//	Mask_num = 0;
-	//	Mask_sum = 0;
-	//}
-
 	//エンターキーを押したら
 	if (MY_KEYDOWN_1second(KEY_INPUT_RETURN) == TRUE)
 	{
+		Mask_sum += Mask_num;
+
 		//乱数を取得
 		Mask_num = GetRand(5);
-		if ((Mask_sum - Mask_num) < stage) {
-			Mask_sum += Mask_num;
+
+		//一定量を超えたら終了
+		if (Mask_sum >= stage)
+		{
+			GameScene = GAME_SCENE_END;
+
+			//終了する際は全て消す
+			for (int cnt = 0; cnt < ANIMAL_MAX; cnt++)
+			{
+				animal[cnt].IsDraw = FALSE;
+			}
+			//再開しても最初から
+			order = 0;
+			//初期化
+			Mask_num = 0;
+			Mask_sum = 0;
 		}
 
 		//単体で表示する
@@ -509,19 +508,19 @@ VOID MY_PLAY_PROC(VOID)
 			order++;
 		}
 	}
-	else if ((MY_KEYDOWN_1second(KEY_INPUT_BACK) == TRUE))
-	{
-		GameScene = GAME_SCENE_END;
-		for (int cnt = 0; cnt < ANIMAL_MAX; cnt++)
-		{
-			animal[cnt].IsDraw = FALSE;
-		}
-		//再開しても最初から
-		order = 0;
-		//初期化
-		Mask_num = 0;
-		Mask_sum = 0;
-	}
+	//else if ((MY_KEYDOWN_1second(KEY_INPUT_BACK) == TRUE))
+	//{
+	//	GameScene = GAME_SCENE_END;
+	//	for (int cnt = 0; cnt < ANIMAL_MAX; cnt++)
+	//	{
+	//		animal[cnt].IsDraw = FALSE;
+	//	}
+	//	//再開しても最初から
+	//	order = 0;
+	//	//初期化
+	//	Mask_num = 0;
+	//	Mask_sum = 0;
+	//}
 	return;
 }
 
