@@ -52,7 +52,7 @@
 #define FONT_INSTALL_ERR_TITLE	TEXT("フォントインストールエラー")
 #define FONT_CREATE_ERR_TITLE	TEXT("フォント作成エラー")
 
-#define GAMETIME				5
+#define GAME_TIME				5
 
 enum GAME_SCENE {
 	GAME_SCENE_START,
@@ -121,9 +121,15 @@ int order = 0;
 int dammy = 0;
 int Mask_num = 0;
 int Mask_sum = 0;
-int Mask_sum_Kari = 0;
 
 int stage = 0;
+
+int Jude;
+
+//時間関連
+double StartTime = 0;		//計測開始時間
+double NokoriTime = 0;		//残り時間
+double TimeLimit = 5;
 
 //画像関連
 IMAGE ImageSTARTBK;   //ゲームの背景
@@ -163,7 +169,7 @@ VOID MY_MENU_DRAW(VOID);  //操作説明画面の描画
 
 BOOL MY_LOAD_IMAGE(VOID);    //画像をまとめて読み込む関数
 VOID MY_DELETE_IMAGE(VOID);  //画像をまとめて削除する関数
-VOID MY_PICTURE_INIT(VOID);
+VOID MY_PICTURE_INIT(VOID);  //画像の消去・初期化する関数
 
 BOOL MY_FONT_INSTALL_ONCE(VOID);    //フォントを一時的にインストール
 VOID MY_FONT_UNINSTALL_ONCE(VOID);  //フォントを一時的にアンインストール
@@ -464,6 +470,13 @@ VOID MY_PLAY_PROC(VOID)
 	//エンターキーを押したら
 	if (MY_KEYDOWN_1SECOND(KEY_INPUT_RETURN) == TRUE)
 	{
+		NokoriTime = (TimeLimit - (GetNowCount() - (StartTime = GetNowCount())) / 1000);
+
+		if (NokoriTime <= 0)
+		{
+			GameScene = GAME_SCENE_MENU;
+		}
+
 		Mask_sum += Mask_num;
 
 		//乱数を取得
@@ -473,6 +486,7 @@ VOID MY_PLAY_PROC(VOID)
 		if (Mask_sum >= stage)
 		{
 			GameScene = GAME_SCENE_END;
+			int Jude = 0;
 
 			//画像の消去・初期化
 			MY_PICTURE_INIT();
@@ -507,9 +521,10 @@ VOID MY_PLAY_PROC(VOID)
 		//成功パターン
 		if ((Mask_sum + Mask_num) >= stage)
 		{
-			GameScene = GAME_SCENE_MENU;
+			GameScene = GAME_SCENE_END;
+			int Jude = 1;
 
-
+			//画像の消去・初期化
 			MY_PICTURE_INIT();
 		}
 	}
@@ -550,6 +565,8 @@ VOID MY_PLAY_DRAW(VOID)
 			DrawStringToHandle(200, GAME_HEIGHT - 100, "あげる？", GetColor(255, 255, 255), TANUKI.handle);
 			DrawBox(500, GAME_HEIGHT - 100, 770, GAME_HEIGHT - 50, GetColor(0, 0, 255), TRUE);
 			DrawStringToHandle(500, GAME_HEIGHT - 100, "あげない？", GetColor(255, 255, 255), TANUKI.handle);
+
+			DrawFormatStringToHandle(0, 800, GetColor(255, 255, 255), TANUKI.handle, "%d", NokoriTime);
 		}
 	}
 
@@ -581,6 +598,19 @@ VOID MY_END_PROC(VOID)
 VOID MY_END_DRAW(VOID)
 {
 	DrawGraph(ImagePLAYENDBK.x, ImagePLAYENDBK.y, ImagePLAYENDBK.handle, TRUE);
+
+	if (Jude == 0)
+	{
+		DrawStringToHandle(0, 0, "gameover", GetColor(255, 255, 255), TANUKI.handle);
+	}
+	else if (Jude == 1)
+	{
+		DrawStringToHandle(0, 0, "gameclear", GetColor(255, 255, 255), TANUKI.handle);
+	}
+	else
+	{
+		DrawStringToHandle(0, 0, "NULL", GetColor(255, 255, 255), TANUKI.handle);
+	}
 
 	return;
 }
@@ -690,6 +720,7 @@ VOID MY_DELETE_IMAGE(VOID)
 	return;
 }
 
+//画像の消去・初期化
 VOID MY_PICTURE_INIT(VOID)
 {
 	//終了する際は全て消す
