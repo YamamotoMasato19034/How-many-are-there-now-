@@ -26,6 +26,8 @@
 #define IMAGE_PLAY_IMAGE_PATH   TEXT(".\\IMAGE\\森の中.png")  //背景の画像
 #define IMAGE_MENU_IMAGE_PATH   TEXT(".\\IMAGE\\操作説明.png")  //背景の画像
 #define IMAGE_MENU_BK_PATH      TEXT(".\\IMAGE\\menu_背景.png")
+#define IMAGE_END_CLEAR_PATH	TEXT(".\\IMAGE\\GameClear.png")
+#define IMAGE_END_OVER_PATH		TEXT(".\\IMAGE\\sippai.png")
 
 //動物チップ関連
 #define GAME_animal1_CHIP_PATH  TEXT(".\\IMAGE\\animal\\mapchip_1.png")  //チップの画像
@@ -58,8 +60,13 @@ enum GAME_SCENE {
 	GAME_SCENE_START,
 	GAME_SCENE_PLAY,
 	GAME_SCENE_END,
-	GAME_SCENE_MENU,
+	GAME_SCENE_MENU
 };   //ゲームのシーン
+
+enum GAME_JUDE {
+	JUDE_CLEAR,  //成功
+	JUDE_OVER    //失敗
+};  //クリアか失敗か
 
 typedef struct STRUCT_I_POINT
 {
@@ -75,6 +82,7 @@ typedef struct STRUCT_IMAGE
 	int y;					//Y位置
 	int width;				//幅
 	int height;				//高さ
+	BOOL IsDraw;
 }IMAGE; //画像構造体
 
 typedef struct STRUCT_ANIMAL
@@ -86,7 +94,6 @@ typedef struct STRUCT_ANIMAL
 	int width;					//幅
 	int height;					//高さ
 	BOOL IsDraw;				//動物を表示できるか
-	int nowImageKind;			//動物の現在の画像
 }MAPCHIP;
 
 typedef struct STRUCT_FONT
@@ -124,21 +131,23 @@ int Mask_sum = 0;
 
 int stage = 0;
 
-int Jude;
-
 //時間関連
 double StartTime = 0;		//計測開始時間
 double NokoriTime = 0;		//残り時間
 double TimeLimit = 5;
 
 //画像関連
-IMAGE ImageSTARTBK;   //ゲームの背景
-IMAGE ImagePLAYENDBK;
-IMAGE ImageMENU;
-IMAGE ImageMENUBK;
+IMAGE ImageSTARTBK;   //ゲームの背景(スタート画面)
+IMAGE ImagePLAYENDBK; //ゲームの背景(プレイ・エンド画面)
+IMAGE ImageMENU;	  //ボタンの画像
+IMAGE ImageMENUBK;	  //ゲームの背景(説明画面)
+IMAGE ImageEndClear;  //クリアの画像
+IMAGE ImageEndOver;   //失敗の画像
 
 //フォント関連
 FONT TANUKI;
+
+int Jude;
 
 //プロトタイプ宣言
 VOID MY_FPS_UPDATE(VOID);		//FPS値を計測、更新する関数
@@ -485,11 +494,14 @@ VOID MY_PLAY_PROC(VOID)
 		//一定量を超えたら終了
 		if (Mask_sum >= stage)
 		{
+			Jude = JUDE_OVER;
+
 			GameScene = GAME_SCENE_END;
-			int Jude = 0;
 
 			//画像の消去・初期化
 			MY_PICTURE_INIT();
+
+			return;
 		}
 
 		//単体で表示する
@@ -521,11 +533,14 @@ VOID MY_PLAY_PROC(VOID)
 		//成功パターン
 		if ((Mask_sum + Mask_num) >= stage)
 		{
-			GameScene = GAME_SCENE_END;
-			int Jude = 1;
+			Jude = JUDE_CLEAR;
 
+			GameScene = GAME_SCENE_END;
+			
 			//画像の消去・初期化
 			MY_PICTURE_INIT();
+
+			return;
 		}
 	}
 
@@ -590,7 +605,6 @@ VOID MY_END_PROC(VOID)
 	{
 		GameScene = GAME_SCENE_START;
 	}
-
 	return;
 }
 
@@ -599,17 +613,15 @@ VOID MY_END_DRAW(VOID)
 {
 	DrawGraph(ImagePLAYENDBK.x, ImagePLAYENDBK.y, ImagePLAYENDBK.handle, TRUE);
 
-	if (Jude == 0)
+	switch (Jude)
 	{
-		DrawStringToHandle(0, 0, "gameover", GetColor(255, 255, 255), TANUKI.handle);
-	}
-	else if (Jude == 1)
-	{
-		DrawStringToHandle(0, 0, "gameclear", GetColor(255, 255, 255), TANUKI.handle);
-	}
-	else
-	{
-		DrawStringToHandle(0, 0, "NULL", GetColor(255, 255, 255), TANUKI.handle);
+	case JUDE_CLEAR:
+		DrawGraph(ImageEndClear.x, ImageEndClear.y, ImageEndClear.handle, TRUE);
+		break;
+
+	case JUDE_OVER:
+		DrawGraph(ImageEndOver.x, ImageEndOver.y, ImageEndOver.handle, TRUE);
+		break;
 	}
 
 	return;
@@ -670,6 +682,7 @@ BOOL MY_LOAD_IMAGE(VOID)
 	ImageMENUBK.x = GAME_WIDTH / 2 - ImageMENUBK.width / 2;
 	ImageMENUBK.y = GAME_HEIGHT / 2 - ImageMENUBK.height / 2;
 
+	//動物チップ
 	int animalRes = LoadDivGraph(
 		GAME_animal1_CHIP_PATH,										//動物チップのパス
 		CHIP_DIV_NUM, GAME_animal1_DIV_TATE, GAME_animal1_DIV_YOKO, //分割する数
@@ -701,6 +714,32 @@ BOOL MY_LOAD_IMAGE(VOID)
 		animal[cnt].IsDraw = FALSE;														//描画できるか(初期値は 描画できない)
 	}
 
+	//クリアの画像
+	strcpy_s(ImageEndClear.path, IMAGE_END_CLEAR_PATH);  //パスの設定
+	ImageEndClear.handle = LoadGraph(ImageEndClear.path);   //読み込み
+	if (ImageEndClear.handle == -1)
+	{
+		//エラーメッセージ表示
+		MessageBox(GetMainWindowHandle(), IMAGE_END_CLEAR_PATH, IMAGE_LOAD_ERR_TITLE, MB_OK);
+		return FALSE;
+	}
+	GetGraphSize(ImageEndClear.handle, &ImageEndClear.width, &ImageEndClear.height);
+	ImageEndClear.x = GAME_WIDTH / 2 - ImageEndClear.width / 2;
+	ImageEndClear.y = GAME_HEIGHT / 2 - ImageEndClear.height / 2;
+
+	//失敗の画像
+	strcpy_s(ImageEndOver.path, IMAGE_END_OVER_PATH);  //パスの設定
+	ImageEndOver.handle = LoadGraph(ImageEndOver.path);   //読み込み
+	if (ImageEndOver.handle == -1)
+	{
+		//エラーメッセージ表示
+		MessageBox(GetMainWindowHandle(), IMAGE_END_OVER_PATH, IMAGE_LOAD_ERR_TITLE, MB_OK);
+		return FALSE;
+	}
+	GetGraphSize(ImageEndOver.handle, &ImageEndOver.width, &ImageEndOver.height);
+	ImageEndOver.x = GAME_WIDTH / 2 - ImageEndOver.width / 2;
+	ImageEndOver.y = GAME_HEIGHT / 2 - ImageEndOver.height / 2;
+
 	return TRUE;
 }
 
@@ -716,6 +755,9 @@ VOID MY_DELETE_IMAGE(VOID)
 	{
 		DeleteGraph(animal[0].handle[i_num]);
 	}
+
+	DeleteGraph(ImageEndClear.handle);
+	DeleteGraph(ImageEndOver.handle);
 
 	return;
 }
