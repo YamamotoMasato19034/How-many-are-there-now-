@@ -41,7 +41,9 @@
 #define GAME_animal1_DIV_YOKO   2     //画像を横に分割する数
 #define CHIP_DIV_NUM GAME_animal1_DIV_TATE * GAME_animal1_DIV_YOKO  //画像を分割する総数
 
-#define FIRST_MASK				20
+//マスク関連
+#define EASY_HAVE_MASK				20
+#define EASY_GIVE_MASK_RANGE		5
 
 //フォントのパスの長さ
 #define FONT_PATH_MAX			255
@@ -121,14 +123,13 @@ int GameScene;
 //マップチップ関連
 MAPCHIP animal[ANIMAL_MAX];
 int GHandle[ANIMAL_MAX];
+int order = 0;
 
 //マスク関連
-int order = 0;
-int dammy = 0;
 int Mask_num = 0;
 int Mask_sum = 0;
-
-int stage = 0;
+int HaveMask = 0;
+int GiveMask = 0;
 
 //時間関連
 double StartTime = 0;		//計測開始時間
@@ -412,7 +413,8 @@ VOID MY_START_PROC(VOID)
 	//エンターキーを押したら、プレイシーンへ移動する
 	if (MY_KEY_DOWN(KEY_INPUT_RETURN) == TRUE)
 	{
-		stage = FIRST_MASK;
+		HaveMask = EASY_HAVE_MASK;
+		GiveMask = EASY_GIVE_MASK_RANGE;
 		GameScene = GAME_SCENE_PLAY;
 	}
 
@@ -489,10 +491,10 @@ VOID MY_PLAY_PROC(VOID)
 		Mask_sum += Mask_num;
 
 		//乱数を取得
-		Mask_num = GetRand(5);
+		Mask_num = GetRand(GiveMask);
 
 		//一定量を超えたら終了
-		if (Mask_sum >= stage)
+		if (Mask_sum >= HaveMask)
 		{
 			Jude = JUDE_OVER;
 
@@ -531,7 +533,7 @@ VOID MY_PLAY_PROC(VOID)
 	if (MY_KEYDOWN_1SECOND(KEY_INPUT_DELETE) == TRUE)
 	{
 		//成功パターン
-		if ((Mask_sum + Mask_num) >= stage)
+		if ((Mask_sum + Mask_num) >= HaveMask)
 		{
 			Jude = JUDE_CLEAR;
 
@@ -543,7 +545,7 @@ VOID MY_PLAY_PROC(VOID)
 			return;
 		}
 		//失敗パターン
-		else if ((Mask_sum + Mask_num) < stage)
+		else if ((Mask_sum + Mask_num) < HaveMask)
 		{
 			Jude = JUDE_OVER;
 
@@ -615,6 +617,8 @@ VOID MY_END_PROC(VOID)
 	//エスケープキーを押したら、スタートシーンへ移動する
 	if (MY_KEY_DOWN(KEY_INPUT_ESCAPE) == TRUE)
 	{
+		HaveMask = 0;
+		GiveMask = 0;
 		GameScene = GAME_SCENE_START;
 	}
 	return;
