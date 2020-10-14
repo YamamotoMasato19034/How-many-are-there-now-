@@ -22,12 +22,12 @@
 #define IMAGE_LOAD_ERR_TITLE    TEXT("画像読み込みエラー")
 
 //画像関連
-#define IMAGE_START_IMAGE_PATH  TEXT(".\\IMAGE\\スタート画面.png")  //背景の画像
-#define IMAGE_PLAY_IMAGE_PATH   TEXT(".\\IMAGE\\森の中.png")  //背景の画像
-#define IMAGE_MENU_IMAGE_PATH   TEXT(".\\IMAGE\\操作説明.png")  //背景の画像
-#define IMAGE_MENU_BK_PATH      TEXT(".\\IMAGE\\menu_背景.png")
-#define IMAGE_END_CLEAR_PATH	TEXT(".\\IMAGE\\GameClear.png")
-#define IMAGE_END_OVER_PATH		TEXT(".\\IMAGE\\sippai.png")
+#define IMAGE_START_IMAGE_PATH  TEXT(".\\IMAGE\\スタート画面.png")  //背景(スタート画面)の画像
+#define IMAGE_PLAY_IMAGE_PATH   TEXT(".\\IMAGE\\森の中.png")		//背景(プレイ・エンド)の画像
+#define IMAGE_MENU_IMAGE_PATH   TEXT(".\\IMAGE\\操作説明.png")		//ボタンの画像
+#define IMAGE_MENU_BK_PATH      TEXT(".\\IMAGE\\menu_背景.png")		//背景(操作説明画面)の画像
+#define IMAGE_END_CLEAR_PATH	TEXT(".\\IMAGE\\GameClear.png")		//クリアの画像
+#define IMAGE_END_OVER_PATH		TEXT(".\\IMAGE\\sippai.png")		//ゲームオーバーの画像
 
 //動物チップ関連
 #define GAME_animal1_CHIP_PATH  TEXT(".\\IMAGE\\animal\\mapchip_1.png")  //チップの画像
@@ -82,7 +82,6 @@ typedef struct STRUCT_IMAGE
 	int y;					//Y位置
 	int width;				//幅
 	int height;				//高さ
-	BOOL IsDraw;
 }IMAGE; //画像構造体
 
 typedef struct STRUCT_ANIMAL
