@@ -143,9 +143,10 @@ IMAGE ImageMENUBK;	  //ゲームの背景(説明画面)
 IMAGE ImageEndClear;  //クリアの画像
 IMAGE ImageEndOver;   //失敗の画像
 
-//フォント関連
+//フォント
 FONT TANUKI;
 
+//クリアか失敗か
 int Jude;
 
 //プロトタイプ宣言
@@ -536,6 +537,18 @@ VOID MY_PLAY_PROC(VOID)
 
 			GameScene = GAME_SCENE_END;
 			
+			//画像の消去・初期化
+			MY_PICTURE_INIT();
+
+			return;
+		}
+		//失敗パターン
+		else if ((Mask_sum + Mask_num) < stage)
+		{
+			Jude = JUDE_OVER;
+
+			GameScene = GAME_SCENE_END;
+
 			//画像の消去・初期化
 			MY_PICTURE_INIT();
 
